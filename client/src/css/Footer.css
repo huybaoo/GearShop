@@ -1,0 +1,17 @@
+.footer-container {
+    width: 100%;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 30px;
+    background-color: #b40606;
+    padding-left: 30px;
+}
+
+.signup-section,
+.policy-section,
+.guide-section,
+.support-section,
+.payment-section {
+    padding: 20px;
+}

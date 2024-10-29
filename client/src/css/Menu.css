@@ -1,0 +1,29 @@
+.menu {
+    margin-top: 5px;
+    width: 100%;
+    height: 80px;
+    background-color: #b40606;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: space-around;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+.textmenu {
+    margin-top: 30px;
+    margin-left: 10px;
+    padding-left: 50px;
+    padding-right: 110px;
+}

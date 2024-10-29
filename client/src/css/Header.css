@@ -1,0 +1,99 @@
+header {
+    background-color: #b40606;
+    width: 100%;
+    height: 100px;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: space-around;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+header nav {
+    display: flex;
+    align-items: center;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    padding-left: 150px;
+}
+
+.header-logo img {
+    height: 50px;
+    width: auto;
+}
+
+.headersearch-form {
+    display: flex;
+    /* Sắp xếp các phần tử theo hàng */
+    align-items: center;
+    /* Căn giữa theo chiều dọc */
+    margin-top: 10px;
+    border: 1px solid white;
+    /* Đường viền bao quanh */
+    border-radius: 5px;
+    /* Góc tròn */
+    overflow: hidden;
+    /* Ẩn phần thừa của các phần tử con */
+    width: 310px;
+    margin-left: 100px;
+}
+
+input[type="headertext"] {
+    padding: 10px;
+    /* Tăng padding để ô tìm kiếm rộng hơn */
+    border: none;
+    /* Ẩn đường viền của ô input */
+    flex: 1;
+    /* Cho phép ô input chiếm toàn bộ không gian có sẵn */
+    outline: none;
+    /* Ẩn outline mặc định */
+    transition: border-color 0.3s;
+    /* Hiệu ứng chuyển màu */
+}
+
+input[type="headertext"]:focus {
+    border-color: #007bff;
+    /* Đổi màu đường viền khi ô được chọn */
+}
+
+button {
+    padding: 10px 15px;
+    /* Tăng padding cho nút */
+    background-color: #b40606;
+    /* Màu nền của nút */
+    color: white;
+    /* Màu chữ */
+    border: none;
+    /* Ẩn đường viền */
+    cursor: pointer;
+    /* Thay đổi con trỏ khi hover */
+    transition: background-color 0.3s;
+    /* Hiệu ứng chuyển màu */
+}
+
+button:hover {
+    background-color: red;
+    /* Đổi màu khi hover */
+}
+
+.headertext {
+    margin-top: 25px;
+    margin-left: 25px;
+    padding-left: 120px;
+    padding-right: 110px;
+}
