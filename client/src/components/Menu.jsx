@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import '../css/Menu.css';
 
@@ -8,19 +8,19 @@ const Menu = () => {
             <nav>
                 <ul>
                     <li className="textmenu">
-                        <Link to="/">Laptop</Link>
+                        <Link to="/laptop">Laptop</Link>
                     </li>
                     <li className="textmenu">
-                        <Link to="/">Màn hình</Link>
+                        <Link to="/manhinh">Màn hình</Link>
                     </li>
                     <li className="textmenu">
-                        <Link to="/">Linh kiện</Link>
+                        <Link to="/linhkien">Linh kiện</Link>
                     </li>
                     <li className="textmenu">
-                        <Link to="/">Gear</Link>
+                        <Link to="/gear">Gear</Link>
                     </li>
                     <li className="textmenu">
-                        <Link to="/">Phụ kiện/Bàn ghế</Link>
+                        <Link to="/phukienbanghe">Phụ kiện/Bàn ghế</Link>
                     </li>
                 </ul>
             </nav>

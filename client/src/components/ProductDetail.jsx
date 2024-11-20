@@ -1,3 +1,4 @@
+// C:\Users\ADMIN\Downloads\gearshop\client\src\components\ProductDetail.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
@@ -11,17 +12,15 @@ const ProductDetail = () => {
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [quantity, setQuantity] = useState(1); // State để lưu số lượng
+    const [quantity, setQuantity] = useState(1);
 
     useEffect(() => {
         const fetchProduct = async () => {
             try {
                 const res = await axios.get(`http://localhost:5000/api/product/${id}`);
                 setProduct(res.data);
-                console.log('Fetched Product:', res.data);
                 setLoading(false);
 
-                // Giả sử bạn có API để lấy sản phẩm liên quan
                 const relatedRes = await axios.get(`http://localhost:5000/api/related-products/${res.data.Type}`);
                 setRelatedProducts(relatedRes.data);
             } catch (err) {
@@ -32,18 +31,28 @@ const ProductDetail = () => {
         fetchProduct();
     }, [id]);
 
-    const handleIncrease = () => {
-        setQuantity(prev => prev + 1);
-    };
-
+    const handleIncrease = () => setQuantity(prev => prev + 1);
     const handleDecrease = () => {
-        if (quantity > 1) {
-            setQuantity(prev => prev - 1);
-        }
+        if (quantity > 1) setQuantity(prev => prev - 1);
     };
 
     const handleAddToCart = () => {
-        // Logic để thêm sản phẩm vào giỏ hàng
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const existingProduct = cart.find(item => item.productId === product._id);
+    
+        if (existingProduct) {
+            existingProduct.quantity += quantity;
+        } else {
+            cart.push({ 
+                productId: product._id, 
+                productName: product.Name, 
+                price: product.Price, 
+                image: product.Img,   
+                quantity: quantity 
+            });
+        }
+        
+        localStorage.setItem('cart', JSON.stringify(cart));
         console.log(`Thêm ${quantity} ${product.Name} vào giỏ hàng`);
     };
 
@@ -54,7 +63,7 @@ const ProductDetail = () => {
         <div>
             <Header />
             <Menu />
-            <div className="product-detail" >
+            <div className="product-detail">
                 <div className="product-info">
                     <div className="image-container">
                         <img src={`${process.env.PUBLIC_URL}/${product.Img}`} alt={product.Name} />
