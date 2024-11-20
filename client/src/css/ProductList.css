@@ -2,9 +2,9 @@
     display: flex;
     justify-content: center;
     padding: 10px;
-}
-
-.product-list ul {
+    }
+    
+    .product-list ul {
     display: flex;
     flex-wrap: wrap;
     gap: 30px;
@@ -12,54 +12,64 @@
     list-style: none;
     padding: 0;
     margin: 0;
-}
-
-.product-item {
-    border: 1px solid #ccc;
-    flex: 1 0 18%;
-    /* Chiều rộng của mỗi sản phẩm là 18% */
-    max-width: 18%;
-    /* Đảm bảo mỗi sản phẩm không chiếm quá nhiều không gian */
-    box-sizing: border-box;
-    text-align: center;
-    position: relative;
-}
-
-.product-item img {
+    }
+    
+    .product-item {
+        border: 1px solid #ccc;
+        flex: 1 0 18%;
+        max-width: 18%;
+        box-sizing: border-box;
+        text-align: center;
+        position: relative;
+        display: flex;
+        flex-direction: column; /* Thiết lập để sắp xếp theo cột */
+        height: 420px; /* Đảm bảo chiếm đầy chiều cao */
+    }
+    
+    .product-item img {
     width: 100%;
     height: 180px;
     object-fit: cover;
-}
-
-@media (max-width: 768px) {
-    .product-item {
-        flex: 1 0 48%;
-        /* Điều chỉnh chiều rộng khi trên màn hình nhỏ hơn */
-        max-width: 48%;
     }
-}
-
-@media (max-width: 480px) {
+    
+    @media (max-width: 768px) {
     .product-item {
-        flex: 1 0 100%;
-        /* Sản phẩm hiển thị dạng hàng dọc trên màn hình rất nhỏ */
-        max-width: 100%;
+    flex: 1 0 48%;
+    /* Điều chỉnh chiều rộng khi trên màn hình nhỏ hơn */
+    max-width: 48%;
     }
-}
-
-.priceproduct {
+    }
+    
+    @media (max-width: 480px) {
+    .product-item {
+    flex: 1 0 100%;
+    /* Sản phẩm hiển thị dạng hàng dọc trên màn hình rất nhỏ */
+    max-width: 100%;
+    }
+    }
+    
+    .priceproduct {
     margin-bottom: 5px;
+    
+    }
+    
 
-}
-
-.button-group {
-    background-color: #b40606;
-}
-
-.btn-add-to-cart {
+    .btn-add-to-cart {
     border: 1px solid #ccc;
-}
-
-.btn-buy-now {
+    }
+    
+    .btn-buy-now {
     border: 1px solid #ccc;
-}
+    }
+    
+    .priceandbutton {
+        margin-top: auto; /* Đẩy phần này xuống dưới cùng */
+        padding: 10px; /* Thêm khoảng cách cho phần này */
+         /* Có thể thêm màu nền để phân biệt */
+    }
+    
+    .button-group {
+        display: flex;
+        justify-content: space-between; /* Căn giữa các nút */
+        background-color: #b40606;
+    }
