@@ -279,6 +279,6 @@ app.post('/api/register', async (req, res) => {
 });
 
 
-const vnpayRouter = require('./routes/vnpay'); 
+const vnpayRouter = require('./vnpay'); 
 // Sử dụng router VNPAY
 app.use('/api/v1/vnpay', vnpayRouter);
