@@ -5,18 +5,26 @@
     font-weight: bold;
 }
 
+.trangchu{
+    padding-left: 10px;
+}
+
 .tieude{
     text-align: center;
 }
 
+.quanliloai{
+    padding-left: 150px;
+}
+
 .quanlisanpham{
-    padding-left: 200px;
+    padding-left: 150px;
 }
 
 .quanlitaikhoan{
-    padding-left: 200px;
+    padding-left: 150px;
 }
 
 .quanlihoadon{
-    padding-left: 200px;
+    padding-left: 150px;
 }

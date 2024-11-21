@@ -96,3 +96,24 @@ button {
 .add-category input {
     margin-right: 10px;
 }
+
+.confirm-dialog {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 20px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.confirm-dialog p {
+    margin-bottom: 15px;
+}
+
+.confirm-dialog button {
+    margin-left: 65px;
+    margin-right: 10px;
+}

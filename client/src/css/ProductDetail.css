@@ -68,3 +68,16 @@
 .related-product-item h4 {
     text-align: center;
 }
+
+.notification {
+    background-color: #4caf50; /* Màu nền xanh lá */
+    color: white; /* Màu chữ trắng */
+    padding: 10px; /* Khoảng cách bên trong */
+    text-align: center; /* Căn giữa */
+    position: fixed; /* Cố định ở đầu trang */
+    top: 0; /* Ở trên cùng */
+    left: 0;
+    right: 0;
+    z-index: 1000; /* Đảm bảo hiển thị trên các phần tử khác */
+    transition: opacity 0.5s ease; /* Hiệu ứng mờ dần */
+}
