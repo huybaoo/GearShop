@@ -1,10 +1,10 @@
-// C:\Users\ADMIN\Downloads\gearshop\client\src\components\ProductDetail.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
 import '../css/ProductDetail.css';
 import Header from '../components/Header';
 import Menu from '../components/Menu';
+import Footer from './Footer';
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -13,6 +13,7 @@ const ProductDetail = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
+    const [notification, setNotification] = useState(''); // State cho thông báo
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -53,7 +54,12 @@ const ProductDetail = () => {
         }
         
         localStorage.setItem('cart', JSON.stringify(cart));
-        console.log(`Thêm ${quantity} ${product.Name} vào giỏ hàng`);
+        setNotification(`Thêm ${quantity} ${product.Name} vào giỏ hàng thành công!`); // Cập nhật thông báo
+
+        // Ẩn thông báo sau 3 giây
+        setTimeout(() => {
+            setNotification('');
+        }, 3000);
     };
 
     if (loading) return <div>Loading...</div>;
@@ -63,6 +69,9 @@ const ProductDetail = () => {
         <div>
             <Header />
             <Menu />
+            {notification && (
+                <div className="notification">{notification}</div> // Khung thông báo
+            )}
             <div className="product-detail">
                 <div className="product-info">
                     <div className="image-container">
@@ -96,6 +105,7 @@ const ProductDetail = () => {
                     ))}
                 </div>
             </div>
+            <Footer />
         </div>
     );
 };

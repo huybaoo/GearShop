@@ -12,24 +12,29 @@ const Register = () => {
     const [address, setAddress] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [message, setMessage] = useState(''); // Trạng thái thông báo
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const response = await axios.post('http://localhost:5000/api/register', {
-                Name: name,
-                Email: email,
-                Phone: phone,
-                Address: address, // Đảm bảo trường này được viết đúng
-                Username: username,
-                Password: password,
+                name: name, 
+                email: email, 
+                phone: phone, 
+                address: address, 
+                username: username, 
+                password: password, 
             });
+
             console.log(response.data);
-            navigate('/login'); // Chuyển hướng đến trang đăng nhập hoặc trang khác
+            setMessage('Đăng ký thành công!'); // Cập nhật thông báo
+            setTimeout(() => {
+                navigate('/login'); // Chuyển hướng sau 2 giây
+            }, 3500);
         } catch (error) {
             console.error('Lỗi khi đăng ký:', error.response ? error.response.data : error.message);
-            // Có thể hiển thị thông báo lỗi cho người dùng
+            setMessage('Đăng ký không thành công. Vui lòng thử lại.'); // Thông báo lỗi
         }
     };
     
@@ -37,6 +42,7 @@ const Register = () => {
         <div className="login-container">
             <div className="Register-box">
                 <h2>Đăng kí</h2>
+                {message && <div className="message">{message}</div>} {/* Hiển thị thông báo */}
                 <form onSubmit={handleSubmit}>
                     <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
                     <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />

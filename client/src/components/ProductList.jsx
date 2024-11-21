@@ -7,6 +7,7 @@ const ProductList = () => {
     const [products, setProducts] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [notification, setNotification] = useState(''); // Thêm state cho thông báo
     const navigate = useNavigate(); // Hook for navigation
 
     useEffect(() => {
@@ -28,58 +29,68 @@ const ProductList = () => {
         const existingProduct = cart.find(item => item.productId === product._id);
         
         if (existingProduct) {
-            existingProduct.quantity += 1; // Increase quantity by 1
+            existingProduct.quantity += 1; // Tăng số lượng lên 1
         } else {
             cart.push({ 
                 productId: product._id, 
                 productName: product.Name, 
                 price: product.Price, 
                 image: product.Img,   
-                quantity: 1 // Default quantity to 1
+                quantity: 1 // Mặc định số lượng là 1
             });
         }
         
         localStorage.setItem('cart', JSON.stringify(cart));
-        console.log(`Thêm 1 ${product.Name} vào giỏ hàng`);
+        setNotification(`Thêm 1 ${product.Name} vào giỏ hàng thành công!`); // Cập nhật thông báo
+
+        // Ẩn thông báo sau 3 giây
+        setTimeout(() => {
+            setNotification('');
+        }, 3000);
     };
 
     const handleBuyNow = (product) => {
-        handleAddToCart(product); // Add product to cart
-        navigate('/cart'); // Redirect to cart page
+        handleAddToCart(product); // Thêm sản phẩm vào giỏ hàng
+        navigate('/cart'); // Điều hướng đến trang giỏ hàng
     };
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
 
     return (
-        <div className="product-list">
-            <ul>
-                {products.map(product => (
-                    <li key={product._id} className="product-item">
-                        <Link to={`/product/${product._id}`}>
-                            <img src={`${process.env.PUBLIC_URL}/${product.Img}`} alt={product.Name} />
-                            <h4>{product.Name}</h4>
-                        </Link>
-                        <div className="priceandbutton">
-                            <div className="priceproduct">{product.Price}đ</div>
-                            <div className="button-group">
-                                <button 
-                                    className="btn-add-to-cart" 
-                                    onClick={() => handleAddToCart(product)}
-                                >
-                                    Thêm vào giỏ hàng
-                                </button>
-                                <button 
-                                    className="btn-buy-now" 
-                                    onClick={() => handleBuyNow(product)}
-                                >
-                                    Mua ngay
-                                </button>
+        <div>
+            {notification && (
+                <div className="notification">{notification}</div> // Khung thông báo
+            )}
+            <div className="product-list">
+                <ul>
+                    {products.map(product => (
+                        <li key={product._id} className="product-item">
+                            <Link to={`/product/${product._id}`}>
+                                <img src={`${process.env.PUBLIC_URL}/${product.Img}`} alt={product.Name} />
+                                <h4>{product.Name}</h4>
+                            </Link>
+                            <div className="priceandbutton">
+                                <div className="priceproduct">{product.Price}đ</div>
+                                <div className="button-group">
+                                    <button 
+                                        className="btn-add-to-cart" 
+                                        onClick={() => handleAddToCart(product)}
+                                    >
+                                        Thêm vào giỏ hàng
+                                    </button>
+                                    <button 
+                                        className="btn-buy-now" 
+                                        onClick={() => handleBuyNow(product)}
+                                    >
+                                        Mua ngay
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </li>
-                ))}
-            </ul>
+                        </li>
+                    ))}
+                </ul>
+            </div>
         </div>
     );
 };

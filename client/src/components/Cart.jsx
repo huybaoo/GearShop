@@ -61,6 +61,12 @@ const Cart = () => {
     };
 
     const handlePayment = async () => {
+        const storedUser = localStorage.getItem('user'); // Lấy thông tin người dùng từ localStorage
+        if (!storedUser) {
+            alert("Bạn cần đăng nhập để thực hiện thanh toán.");
+            return;
+        }
+
         try {
             if (selectedProducts.length === 0) {
                 alert("Giỏ hàng của bạn trống. Không thể thanh toán.");

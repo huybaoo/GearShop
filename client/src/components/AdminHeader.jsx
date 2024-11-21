@@ -7,6 +7,7 @@ const AdminHeader = () => {
         <header>
             
             <nav className="linkadminheader">
+                <a className="trangchu" href="/admin">Trang chủ</a>
                 <a className="quanliloai" href="/admin/admincategory">Quản lý loại sản phẩm</a>
                 <a className="quanlisanpham" href="/admin/adminproductlist">Quản lý sản phẩm</a>
                 <a className="quanlitaikhoan" href='#'>Quản lí tài khoản</a>
