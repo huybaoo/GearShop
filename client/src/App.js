@@ -19,6 +19,8 @@ import PkbgProductList from './components/PkbgProductList';
 import LinhkienProductList from './components/LinhkienProductList';
 import ManhinhProductList from './components/ManhinhProductList';
 import AdminHome from './components/AdminHome';
+import AdminLogin from './components/AdminLogin';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const App = () => {
     return (
@@ -38,9 +40,10 @@ const App = () => {
                 <Route path="/phukienbanghe"  element={<PkbgProductList />}/>
                 <Route path="/search" element={<SearchResults />} />
 
-                <Route path="/admin" element={<AdminHome />}/>
-                <Route path="/admin/admincategory" element={<AdminCategory />}/>
-                <Route path="/admin/adminproductlist" element={<AdminProductList />}/>
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin" element={<ProtectedRoute><AdminHome /></ProtectedRoute>} />
+                <Route path="/admin/admincategory" element={<ProtectedRoute><AdminCategory /></ProtectedRoute>}/>
+                <Route path="/admin/adminproductlist" element={<ProtectedRoute><AdminProductList /></ProtectedRoute>}/>
             </Routes>
         </Router>
     );
