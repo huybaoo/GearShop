@@ -278,7 +278,30 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
+// Định nghĩa schema và model cho admin
+const adminSchema = new mongoose.Schema({
+    username: String,
+    password: String
+}, { collection: 'admin' });
 
-const vnpayRouter = require('./vnpay'); 
+const Admin = mongoose.model('Admin', adminSchema);
+
+app.post('/api/admin/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        const admin = await Admin.findOne({ username: username, password: password });
+        if (!admin) {
+            return res.status(401).json({ message: 'Sai tài khoản hoặc mật khẩu' });
+        }
+        
+        res.status(200).json({ message: 'Đăng nhập thành công', admin: { Name: admin.username } });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+
+const vnpayRouter = require('./routes/vnpay'); 
 // Sử dụng router VNPAY
 app.use('/api/v1/vnpay', vnpayRouter);
