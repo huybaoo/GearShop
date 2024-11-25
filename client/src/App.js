@@ -21,6 +21,8 @@ import ManhinhProductList from './components/ManhinhProductList';
 import AdminHome from './components/AdminHome';
 import AdminLogin from './components/AdminLogin';
 import ProtectedRoute from './components/ProtectedRoute';
+import PaymentSuccess from './components/PaymentSuccess';
+import OrderHistory from './components/OrderHistory';
 
 const App = () => {
     return (
@@ -39,6 +41,8 @@ const App = () => {
                 <Route path="/linhkien"  element={<LinhkienProductList />}/>
                 <Route path="/phukienbanghe"  element={<PkbgProductList />}/>
                 <Route path="/search" element={<SearchResults />} />
+                <Route path="/payment/success" element={<PaymentSuccess />} />
+                <Route path="/orders" element={<OrderHistory />} />
 
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin" element={<ProtectedRoute><AdminHome /></ProtectedRoute>} />
