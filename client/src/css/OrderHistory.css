@@ -1,0 +1,57 @@
+.order-history {
+    padding: 20px;
+    background-color: #f8f9fa; /* Light background for the entire page */
+}
+
+.order-history__title {
+    font-size: 2rem; /* Larger font for the title */
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333; /* Darker color for better readability */
+}
+
+.order-history__empty {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #666; /* Gray color for the empty state */
+}
+
+.order-history__list {
+    list-style-type: none; /* Remove default list styles */
+    padding: 0; /* Remove padding */
+}
+
+.order-history__item {
+    border: 1px solid #ccc; /* Border for each order */
+    border-radius: 8px; /* Rounded corners */
+    padding: 15px;
+    margin-bottom: 15px; /* Space between orders */
+    background-color: #ffffff; /* White background for items */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.order-history__order-id {
+    font-size: 1.5rem; /* Larger font for order ID */
+    color: #b40606; /* Bootstrap primary color */
+}
+
+.order-history__total-price,
+.order-history__status,
+.order-history__date {
+    font-size: 1rem; /* Consistent font size */
+    margin: 5px 0; /* Margin for spacing */
+}
+
+.order-history__product-title {
+    margin-top: 15px; /* Space above product details */
+}
+
+.order-history__product-list {
+    list-style-type: none; /* Remove default list styles */
+    padding-left: 20px; /* Indent for product list */
+}
+
+.order-history__product-item {
+    font-size: 0.9rem; /* Smaller font for product details */
+    color: #666; /* Gray color for product details */
+}
