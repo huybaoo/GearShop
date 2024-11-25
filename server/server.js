@@ -233,7 +233,6 @@ const customerSchema = new mongoose.Schema({
     Email: String,
     Phone: Number,
     Address: String,
-    Username: String,
     Password: String
 }, { collection: 'customer' });
 
@@ -241,10 +240,10 @@ const Customer = mongoose.model('Customer', customerSchema);
 
 // API đăng nhập
 app.post('/api/login', async (req, res) => {
-    const { username, password } = req.body;
+    const { name, password } = req.body;
 
     try {
-        const customer = await Customer.findOne({ Username: username, Password: password });
+        const customer = await Customer.findOne({ Name: name, Password: password });
         if (!customer) {
             return res.status(401).json({ message: 'Sai tài khoản hoặc mật khẩu' });
         }
@@ -259,18 +258,23 @@ app.post('/api/login', async (req, res) => {
 
 // API để đăng ký người dùng
 app.post('/api/register', async (req, res) => {
-    const { name, email, phone, address, username, password } = req.body;
-
-    const newCustomer = new Customer({
-        Name: name,
-        Email: email,
-        Phone: phone,
-        Address: address,
-        Username: username,
-        Password: password
-    });
+    const { name, email, phone, address, password } = req.body;
 
     try {
+        // Kiểm tra xem tên đã tồn tại hay chưa
+        const existingCustomer = await Customer.findOne({ Name: name });
+        if (existingCustomer) {
+            return res.status(400).json({ message: 'Tên đăng nhập đã được sử dụng. Vui lòng chọn tên khác.' });
+        }
+
+        const newCustomer = new Customer({
+            Name: name,
+            Email: email,
+            Phone: phone,
+            Address: address,
+            Password: password
+        });
+
         const savedCustomer = await newCustomer.save();
         res.status(201).json(savedCustomer);
     } catch (err) {
@@ -295,7 +299,7 @@ app.post('/api/admin/login', async (req, res) => {
             return res.status(401).json({ message: 'Sai tài khoản hoặc mật khẩu' });
         }
         
-        res.status(200).json({ message: 'Đăng nhập thành công', admin: { Name: admin.username } });
+        res.status(200).json({ message: 'Đăng nhập thành công', admin: { Name: admin.username} });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -305,3 +309,61 @@ app.post('/api/admin/login', async (req, res) => {
 const vnpayRouter = require('./routes/vnpay'); 
 // Sử dụng router VNPAY
 app.use('/api/v1/vnpay', vnpayRouter);
+
+// Define Order schema and model
+const orderSchema = new mongoose.Schema({
+    user: { type: Object, required: true }, // User data
+    products: [
+        {
+            productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+            quantity: { type: Number, required: true },
+            name: { type: String, required: true }, 
+            price: { type: Number, required: true } 
+        }
+    ],
+    totalPrice: { type: Number, required: true },
+    status: { type: String, default: 'Chưa thanh toán' },
+    createdAt: { type: Date, default: Date.now }
+}, { collection: 'order' });
+
+const Order = mongoose.model('Order', orderSchema);
+
+module.exports = { Order, Product, Category, Cart, Customer, Admin };
+
+// API to create an order
+app.post('/api/orders', async (req, res) => {
+    const { user, products, totalPrice, status } = req.body;
+
+    console.log("Received order data:", req.body); // Log the incoming data
+
+    if (!user || !products || !totalPrice) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const newOrder = new Order({
+        user,
+        products,
+        totalPrice,
+        status
+    });
+
+    try {
+        await newOrder.save();
+        res.status(201).json({ message: 'Order created successfully', orderId: newOrder._id });
+    } catch (err) {
+        console.error("Error creating order:", err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// API để lấy danh sách đơn hàng theo tên người dùng
+app.get('/api/orders/name/:name', async (req, res) => {
+    try {
+        const orders = await Order.find({ 'user.Name': req.params.name }).populate('products.productId');
+        res.json(orders);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+
