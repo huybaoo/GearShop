@@ -1,29 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Menu from '../components/Menu';
 import '../css/Cart.css';
 
 const Cart = () => {
+    const navigate = useNavigate();
     const [selectedProducts, setSelectedProducts] = useState([]);
-    const [currentTime, setCurrentTime] = useState('');
-    let timer;
+    const [customerName, setCustomerName] = useState('');
+    const [customerAddress, setCustomerAddress] = useState('');
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
         setSelectedProducts(storedCart);
-    }, []);
-
-    useEffect(() => {
-        const updateTime = () => {
-            const now = new Date();
-            setCurrentTime(now.toLocaleTimeString());
-        };
-
-        updateTime();
-        timer = setInterval(updateTime, 1000);
-
-        return () => clearInterval(timer);
     }, []);
 
     const handleRemoveFromCart = (productId) => {
@@ -60,13 +50,14 @@ const Cart = () => {
         }, 0);
     };
 
-    const handlePayment = async () => {
-        const storedUser = localStorage.getItem('user'); // Lấy thông tin người dùng từ localStorage
+    const handlePayment = async (isCashOnDelivery = false) => {
+        const storedUser = localStorage.getItem('user');
         if (!storedUser) {
             alert("Bạn cần đăng nhập để thực hiện thanh toán.");
+            navigate('/login');
             return;
         }
-
+    
         try {
             if (selectedProducts.length === 0) {
                 alert("Giỏ hàng của bạn trống. Không thể thanh toán.");
@@ -74,29 +65,69 @@ const Cart = () => {
             }
     
             const total = totalMoney(selectedProducts);
-            console.log("Tổng số tiền trước khi chuyển đổi:", total);
-    
             if (total < 5000 || total >= 1000000000) {
-                alert("Số tiền giao dịch không hợp lệ. Số tiền hợp lệ từ 5,000 đến dưới 1 tỷ đồng.");
+                alert("Số tiền giao dịch không hợp lệ.");
                 return;
             }
     
-            const newPayment = {
-                products: selectedProducts,
-                amount: total, // Đảm bảo số tiền đã tính đúng
-                bankcode: null,
-                language: "vn",
-            };
+            if (isCashOnDelivery) {
+                // Nếu thanh toán sau khi nhận hàng
+                const orderData = {
+                    user: {
+                        _id: storedUser._id,
+                        name: customerName,
+                        address: customerAddress,
+                        ...JSON.parse(storedUser)
+                    },
+                    products: selectedProducts.map(item => ({
+                        productId: item.productId,
+                        quantity: item.quantity,
+                        name: item.productName,
+                        price: item.price
+                    })),
+                    totalPrice: total,
+                    status: 'Thanh toán sau khi nhận hàng'
+                };
     
-            console.log("Dữ liệu thanh toán:", newPayment);
+                await axios.post('http://localhost:5000/api/orders', orderData);
+                alert('Đặt hàng thành công!');
     
-            const response = await axios.post(
-                "http://localhost:5000/api/v1/vnpay/create_payment_url",
-                newPayment
-            );
+                // Xóa giỏ hàng và chuyển hướng
+                setSelectedProducts([]);
+                localStorage.removeItem('cart');
+                navigate('/orders');
+            } else {
+                // Nếu thanh toán qua ngân hàng
+                const paymentResponse = await axios.post("http://localhost:5000/api/v1/vnpay/create_payment_url", {
+                    amount: total,
+                    language: "vn",
+                });
     
-            if (response.status === 200 && response.data) {
-                window.location.href = response.data; // Chuyển hướng đến URL thanh toán
+                if (paymentResponse.status === 200 && paymentResponse.data) {
+                    // Lưu đơn hàng vào collection orders với trạng thái "Thanh toán qua ngân hàng"
+                    const orderData = {
+                        user: {
+                            _id: storedUser._id,
+                            name: customerName,
+                            address: customerAddress,
+                            ...JSON.parse(storedUser)
+                        },
+                        products: selectedProducts.map(item => ({
+                            productId: item.productId,
+                            quantity: item.quantity,
+                            name: item.productName,
+                            price: item.price
+                        })),
+                        totalPrice: total,
+                        status: 'Thanh toán qua ngân hàng'
+                    };
+    
+                    await axios.post('http://localhost:5000/api/orders', orderData);
+                    alert('Đang chuyển đến trang thanh toán...');
+    
+                    // Chuyển hướng đến URL thanh toán
+                    window.location.href = paymentResponse.data;
+                }
             }
         } catch (error) {
             console.error('Lỗi trong quá trình thanh toán:', error);
@@ -108,10 +139,9 @@ const Cart = () => {
         <div>
             <Header />
             <Menu />
-            <h1>Giỏ hàng</h1>
-            <div id="timeDisplay">Thời gian hiện tại: {currentTime}</div>
+            <h1 className="giohang">Giỏ hàng</h1>
             {selectedProducts.length === 0 ? (
-                <p>Giỏ hàng của bạn trống.</p>
+                <p className="giohang">Giỏ hàng của bạn trống.</p>
             ) : (
                 <div className="cart-container">
                     <div className="cart-items">
@@ -120,7 +150,7 @@ const Cart = () => {
                                 <img src={`/${item.image}`} alt={item.productName} />
                                 <div className="cart-item-details">
                                     <h3>{item.productName}</h3>
-                                    <p>Giá: {item.price} VNĐ</p>
+                                    <p>Giá: {item.price.toLocaleString("vi-VN")} VNĐ</p>
                                     <div className="quantity-control">
                                         <button onClick={() => handleDecreaseQuantity(item.productId)}>-</button>
                                         <span>{item.quantity}</span>
@@ -132,8 +162,21 @@ const Cart = () => {
                         ))}
                     </div>
                     <div className="cart-summary">
-                        <h2>Tổng tiền: {totalMoney(selectedProducts)} VNĐ</h2>
-                        <button className="checkout-button" onClick={handlePayment}>Thanh toán</button>
+                        <h2>Tổng tiền: {totalMoney(selectedProducts).toLocaleString("vi-VN")} VNĐ</h2>
+                        <input 
+                            type="text" 
+                            placeholder="Họ tên" 
+                            value={customerName} 
+                            onChange={(e) => setCustomerName(e.target.value)} 
+                        />
+                        <input 
+                            type="text" 
+                            placeholder="Địa chỉ" 
+                            value={customerAddress} 
+                            onChange={(e) => setCustomerAddress(e.target.value)} 
+                        />
+                        <button className="checkout-button" onClick={() => handlePayment()}>Thanh toán qua ngân hàng</button>
+                        <button className="checkout-button" onClick={() => handlePayment(true)}>Thanh toán sau khi nhận hàng</button>
                     </div>
                 </div>
             )}

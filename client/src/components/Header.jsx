@@ -1,4 +1,4 @@
-import React, { useState , useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/Header.css'; // Tùy chọn: thêm CSS nếu cần
 
@@ -33,6 +33,12 @@ const Header = () => {
         navigate('/'); // Chuyển hướng về trang đăng nhập
     };
 
+    const handleUserNameClick = () => {
+        if (user) {
+            navigate('/orders'); // Chuyển hướng đến trang lịch sử mua hàng
+        }
+    };
+
     return (
         <header>
             <nav>
@@ -52,10 +58,12 @@ const Header = () => {
                         <button type="submit">Tìm</button>
                     </form>
                     <div className="header-logo">
-                    {user ? (
+                        {user ? (
                             <>
-                                <span>{user.Name}</span> {/* Hiển thị tên người dùng */}
-                                <button onClick={handleLogout}>Đăng xuất</button> {/* Nút đăng xuất */}
+                                <span onClick={handleUserNameClick} style={{ cursor: 'pointer', color: 'black' }}>
+                                    {user.Name}
+                                </span> 
+                                <button onClick={handleLogout}>Đăng xuất</button> 
                             </>
                         ) : (
                             <a href="/login">

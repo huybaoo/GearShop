@@ -5,7 +5,7 @@ import Menu from '../components/Menu';
 import '../css/Login.css';
 
 const Login = () => {
-    const [username, setUsername] = useState('');
+    const [name, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate(); // Khởi tạo useNavigate
@@ -20,7 +20,7 @@ const Login = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify({ name, password }),
             });
     
             const data = await response.json();
@@ -45,8 +45,8 @@ const Login = () => {
                 <form onSubmit={handleSubmit}>
                     <input 
                         type="text" 
-                        placeholder="Username" 
-                        value={username} 
+                        placeholder="Name" 
+                        value={name} 
                         onChange={(e) => setUsername(e.target.value)} 
                     />
                     <input 

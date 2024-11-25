@@ -10,9 +10,8 @@ const Register = () => {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
-    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [message, setMessage] = useState(''); // Trạng thái thông báo
+    const [message, setMessage] = useState('');
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -23,32 +22,30 @@ const Register = () => {
                 email: email, 
                 phone: phone, 
                 address: address, 
-                username: username, 
                 password: password, 
             });
 
             console.log(response.data);
-            setMessage('Đăng ký thành công!'); // Cập nhật thông báo
+            setMessage('Đăng ký thành công!');
             setTimeout(() => {
-                navigate('/login'); // Chuyển hướng sau 2 giây
+                navigate('/login');
             }, 3500);
         } catch (error) {
             console.error('Lỗi khi đăng ký:', error.response ? error.response.data : error.message);
-            setMessage('Đăng ký không thành công. Vui lòng thử lại.'); // Thông báo lỗi
+            setMessage(error.response ? error.response.data.message : 'Đăng ký không thành công. Vui lòng thử lại.');
         }
     };
     
     return (
         <div className="login-container">
             <div className="Register-box">
-                <h2>Đăng kí</h2>
-                {message && <div className="message">{message}</div>} {/* Hiển thị thông báo */}
+                <h2>Đăng ký</h2>
+                {message && <div className="message">{message}</div>}
                 <form onSubmit={handleSubmit}>
                     <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
                     <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
                     <input type="text" placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} required />
                     <input type="text" placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} required />
-                    <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
                     <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                     <button type="submit">Đăng Kí</button>
                 </form>
