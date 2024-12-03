@@ -1,7 +1,5 @@
-# GearShop #FITVAA
-NHÓM 9 : Nghiên cứu và xây dựng website bán đồ công nghệ
-KHOA : CÔNG NGHỆ THÔNG TIN
-HỌC VIỆN HÀNG KHÔNG
+NHÓM 09 - KHOA CÔNG NGHỆ THÔNG TIN - HỌC VIỆN HÀNG KHÔNG #FITVAA
+Xây dựng website bán đồ công nghệ
 
 Thành viên: 
 -Nguyễn Huy Bảo (2254810164)
