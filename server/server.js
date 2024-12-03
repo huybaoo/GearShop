@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const vnpayRouter = require('./routes/vnpay'); 
+const vnpayRouter = require('./vnpay'); 
 // Sử dụng router VNPAY
 app.use('/api/v1/vnpay', vnpayRouter);
 
