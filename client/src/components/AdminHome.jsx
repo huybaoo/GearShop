@@ -13,11 +13,10 @@ const AdminHome = () => {
 
     return (
         <div>
-            <AdminHeader />
-            <h1 className="adminhomeh1">TRANG QUẢN TRỊ GEARSHOP</h1>
-            <button onClick={handleLogout} className="logout-button">
-                Đăng xuất
-            </button>
+            <AdminHeader onLogout={handleLogout} />
+            <div className="adminhome-content">
+                <h1 className="adminhomeh1">TRANG QUẢN TRỊ GEARSHOP</h1>
+            </div>
         </div>
     );
 };

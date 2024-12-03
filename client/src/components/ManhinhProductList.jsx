@@ -4,14 +4,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import '../css/ProductList.css';
 import Header from './Header';
 import Menu from './Menu';
-import Footer from './Footer';
 
 const ManhinhProductList = () => {
     const [products, setProducts] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [notification, setNotification] = useState(''); // Thêm state cho thông báo
-    const navigate = useNavigate(); // Hook for navigation
+    const [notification, setNotification] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [productsPerPage] = useState(8);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -33,29 +34,40 @@ const ManhinhProductList = () => {
         const existingProduct = cart.find(item => item.productId === product._id);
         
         if (existingProduct) {
-            existingProduct.quantity += 1; // Tăng số lượng lên 1
+            existingProduct.quantity += 1;
         } else {
             cart.push({ 
                 productId: product._id, 
                 productName: product.Name, 
                 price: product.Price, 
                 image: product.Img,   
-                quantity: 1 // Mặc định số lượng là 1
+                quantity: 1
             });
         }
         
         localStorage.setItem('cart', JSON.stringify(cart));
-        setNotification(`Thêm 1 ${product.Name} vào giỏ hàng thành công!`); // Cập nhật thông báo
-
-        // Ẩn thông báo sau 3 giây
+        setNotification(`Thêm 1 ${product.Name} vào giỏ hàng thành công!`);
+        
         setTimeout(() => {
             setNotification('');
         }, 3000);
     };
 
     const handleBuyNow = (product) => {
-        handleAddToCart(product); // Thêm sản phẩm vào giỏ hàng
-        navigate('/cart'); // Điều hướng đến trang giỏ hàng
+        handleAddToCart(product);
+        navigate('/cart');
+    };
+
+    const indexOfLastProduct = currentPage * productsPerPage;
+    const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+    const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+    const totalPages = Math.ceil(products.length / productsPerPage);
+    const formatPrice = (price) => {
+        return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "đ";
+    };
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
     };
 
     if (loading) return <div>Loading...</div>;
@@ -66,27 +78,27 @@ const ManhinhProductList = () => {
             <Header />
             <Menu />
             {notification && (
-                <div className="notification">{notification}</div> // Khung thông báo
+                <div className="pl-notification">{notification}</div>
             )}
-            <div className="product-list">
+            <div className="pl-product-list">
                 <ul>
-                    {products.map(product => (
-                        <li key={product._id} className="product-item">
-                            <Link to={`/product/${product._id}`}>
+                    {currentProducts.map(product => (
+                        <li key={product._id} className="pl-product-list-item">
+                            <Link to={`/product/${product._id}`} style={{ textDecoration: 'none' }}>
                                 <img src={`${process.env.PUBLIC_URL}/${product.Img}`} alt={product.Name} />
-                                <h4>{product.Name}</h4>
+                                <h4 className="product-name">{product.Name}</h4>
                             </Link>
-                            <div className="priceandbutton">
-                                <div className="priceproduct">{product.Price}đ</div>
-                                <div className="button-group">
+                            <div className="pl-priceandbutton">
+                                <div className="priceproduct">{formatPrice(product.Price)}</div>
+                                <div className="pl-button-group">
                                     <button 
-                                        className="btn-add-to-cart" 
+                                        className="pl-btn-add-to-cart" 
                                         onClick={() => handleAddToCart(product)}
                                     >
                                         Thêm vào giỏ hàng
                                     </button>
                                     <button 
-                                        className="btn-buy-now" 
+                                        className="pl-btn-buy-now" 
                                         onClick={() => handleBuyNow(product)}
                                     >
                                         Mua ngay
@@ -96,8 +108,18 @@ const ManhinhProductList = () => {
                         </li>
                     ))}
                 </ul>
+                <div className="pl-pagination">
+                    {Array.from({ length: totalPages }, (_, index) => (
+                        <button 
+                            key={index + 1} 
+                            onClick={() => handlePageChange(index + 1)}
+                            className={currentPage === index + 1 ? 'active' : ''}
+                        >
+                            {index + 1}
+                        </button>
+                    ))}
+                </div>
             </div>
-            <Footer />
         </div>
     );
 };

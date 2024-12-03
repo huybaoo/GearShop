@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
 import '../css/AdminHeader.css'; 
 
-const AdminHeader = () => {
-    return(
-        <header>
-            
+const AdminHeader = ({ onLogout }) => {
+    return (
+        <header className="admin-header">
             <nav className="linkadminheader">
-                <a className="trangchu" href="/admin">Trang chủ</a>
-                <a className="quanliloai" href="/admin/admincategory">Quản lý loại sản phẩm</a>
-                <a className="quanlisanpham" href="/admin/adminproductlist">Quản lý sản phẩm</a>
-                <a className="quanlitaikhoan" href='#'>Quản lí tài khoản</a>
-                <a className="quanlihoadon" href='#'>Quản lí hóa đơn</a>
+                <a className="header-link" href="/admin">TRANG CHỦ</a>
+                <a className="header-link" href="/admin/admincategory">QUẢN LÝ LOẠI SẢN PHẨM</a>
+                <a className="header-link" href="/admin/adminproductlist">QUẢN LÝ SẢN PHẨM</a>
+                <a className="header-link" href="/admin/admincustomerlist">QUẢN LÝ TÀI KHOẢN</a>
+                <a className="header-link" href="/admin/adminorderhistory">QUẢN LÝ HÓA ĐƠN</a>
+                <button onClick={onLogout} className="logout-button">Đăng xuất</button>
             </nav>
         </header>
-);
+    );
 };
 
 export default AdminHeader;

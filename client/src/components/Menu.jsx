@@ -8,19 +8,19 @@ const Menu = () => {
             <nav>
                 <ul>
                     <li className="textmenu">
-                        <Link to="/laptop">Laptop</Link>
+                        <Link to="/laptop">LAPTOP</Link>
                     </li>
                     <li className="textmenu">
-                        <Link to="/manhinh">Màn hình</Link>
+                        <Link to="/manhinh">MÀN HÌNH</Link>
                     </li>
                     <li className="textmenu">
-                        <Link to="/linhkien">Linh kiện</Link>
+                        <Link to="/linhkien">LINH KIỆN</Link>
                     </li>
                     <li className="textmenu">
-                        <Link to="/gear">Gear</Link>
+                        <Link to="/gear">GEAR</Link>
                     </li>
                     <li className="textmenu">
-                        <Link to="/phukienbanghe">Phụ kiện/Bàn ghế</Link>
+                        <Link to="/phukienbanghe">PHỤ KIỆN/BÀN GHẾ</Link>
                     </li>
                 </ul>
             </nav>

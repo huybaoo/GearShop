@@ -25,10 +25,22 @@ const Cart = () => {
     const handleIncreaseQuantity = (productId) => {
         const updatedCart = selectedProducts.map(item => {
             if (item.productId === productId) {
-                return { ...item, quantity: item.quantity + 1 };
+                axios.get(`http://localhost:5000/api/product/${item.productId}`)
+                    .then(res => {
+                        const stock = res.data.Stock;
+                        if (item.quantity < stock) {
+                            item.quantity += 1;
+                        } else {
+                            alert(`Sản phẩm này chỉ còn ${stock} trong kho.`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching stock:', error);
+                    });
             }
             return item;
         });
+        
         setSelectedProducts(updatedCart);
         localStorage.setItem('cart', JSON.stringify(updatedCart));
     };
@@ -70,62 +82,40 @@ const Cart = () => {
                 return;
             }
     
-            if (isCashOnDelivery) {
-                // Nếu thanh toán sau khi nhận hàng
-                const orderData = {
-                    user: {
-                        _id: storedUser._id,
-                        name: customerName,
-                        address: customerAddress,
-                        ...JSON.parse(storedUser)
-                    },
-                    products: selectedProducts.map(item => ({
-                        productId: item.productId,
-                        quantity: item.quantity,
-                        name: item.productName,
-                        price: item.price
-                    })),
-                    totalPrice: total,
-                    status: 'Thanh toán sau khi nhận hàng'
-                };
+            const orderData = {
+                user: {
+                    ...JSON.parse(storedUser),
+                    name: customerName,
+                    address: customerAddress,
+                },
+                products: selectedProducts.map(item => ({
+                    productId: item.productId,
+                    quantity: item.quantity,
+                    name: item.productName,
+                    price: item.price
+                })),
+                totalPrice: total,
+                method: isCashOnDelivery ? 'Thanh toán sau khi nhận hàng' : 'Thanh toán qua ngân hàng',
+                status: isCashOnDelivery ? 'Chưa được xác nhận' : 'Đã được xác nhận',
+            };
     
+            if (isCashOnDelivery) {
                 await axios.post('http://localhost:5000/api/orders', orderData);
                 alert('Đặt hàng thành công!');
-    
-                // Xóa giỏ hàng và chuyển hướng
                 setSelectedProducts([]);
                 localStorage.removeItem('cart');
                 navigate('/orders');
             } else {
-                // Nếu thanh toán qua ngân hàng
                 const paymentResponse = await axios.post("http://localhost:5000/api/v1/vnpay/create_payment_url", {
                     amount: total,
                     language: "vn",
                 });
     
                 if (paymentResponse.status === 200 && paymentResponse.data) {
-                    // Lưu đơn hàng vào collection orders với trạng thái "Thanh toán qua ngân hàng"
-                    const orderData = {
-                        user: {
-                            _id: storedUser._id,
-                            name: customerName,
-                            address: customerAddress,
-                            ...JSON.parse(storedUser)
-                        },
-                        products: selectedProducts.map(item => ({
-                            productId: item.productId,
-                            quantity: item.quantity,
-                            name: item.productName,
-                            price: item.price
-                        })),
-                        totalPrice: total,
-                        status: 'Thanh toán qua ngân hàng'
-                    };
-    
                     await axios.post('http://localhost:5000/api/orders', orderData);
                     alert('Đang chuyển đến trang thanh toán...');
-    
-                    // Chuyển hướng đến URL thanh toán
+                    setSelectedProducts([]);
+                    localStorage.removeItem('cart');
                     window.location.href = paymentResponse.data;
                 }
             }
@@ -152,11 +142,11 @@ const Cart = () => {
                                     <h3>{item.productName}</h3>
                                     <p>Giá: {item.price.toLocaleString("vi-VN")} VNĐ</p>
                                     <div className="quantity-control">
-                                        <button onClick={() => handleDecreaseQuantity(item.productId)}>-</button>
+                                        <button className="quantity-button" onClick={() => handleDecreaseQuantity(item.productId)}>-</button>
                                         <span>{item.quantity}</span>
-                                        <button onClick={() => handleIncreaseQuantity(item.productId)}>+</button>
+                                        <button className="quantity-button" onClick={() => handleIncreaseQuantity(item.productId)}>+</button>
                                     </div>
-                                    <button onClick={() => handleRemoveFromCart(item.productId)}>Xóa</button>
+                                    <button className="remove-button" onClick={() => handleRemoveFromCart(item.productId)}>Xóa</button>
                                 </div>
                             </div>
                         ))}

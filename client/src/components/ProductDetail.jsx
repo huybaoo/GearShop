@@ -4,7 +4,6 @@ import { useParams, Link } from 'react-router-dom';
 import '../css/ProductDetail.css';
 import Header from '../components/Header';
 import Menu from '../components/Menu';
-import Footer from './Footer';
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -13,17 +12,21 @@ const ProductDetail = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
-    const [notification, setNotification] = useState(''); // State cho thông báo
+    const [notification, setNotification] = useState('');
 
     useEffect(() => {
         const fetchProduct = async () => {
             try {
                 const res = await axios.get(`http://localhost:5000/api/product/${id}`);
                 setProduct(res.data);
+    
+                const relatedRes = await axios.get(
+                    `http://localhost:5000/api/products/related?name=${encodeURIComponent(res.data.Name)}&excludeId=${id}`
+                );
+    
+                // Giới hạn danh sách chỉ lấy 3 sản phẩm liên quan
+                setRelatedProducts((relatedRes.data || []).slice(0, 3));
                 setLoading(false);
-
-                const relatedRes = await axios.get(`http://localhost:5000/api/related-products/${res.data.Type}`);
-                setRelatedProducts(relatedRes.data);
             } catch (err) {
                 setError(err.message);
                 setLoading(false);
@@ -32,12 +35,24 @@ const ProductDetail = () => {
         fetchProduct();
     }, [id]);
 
-    const handleIncrease = () => setQuantity(prev => prev + 1);
+    const handleIncrease = () => {
+        if (quantity < product.Stock) {
+            setQuantity(prev => prev + 1);
+        }
+    };
+
     const handleDecrease = () => {
-        if (quantity > 1) setQuantity(prev => prev - 1);
+        if (quantity > 1) {
+            setQuantity(prev => prev - 1);
+        }
     };
 
     const handleAddToCart = () => {
+        if (quantity > product.Stock) {
+            setNotification(`Chỉ còn ${product.Stock} sản phẩm trong kho!`);
+            return;
+        }
+
         const cart = JSON.parse(localStorage.getItem('cart')) || [];
         const existingProduct = cart.find(item => item.productId === product._id);
     
@@ -54,23 +69,22 @@ const ProductDetail = () => {
         }
         
         localStorage.setItem('cart', JSON.stringify(cart));
-        setNotification(`Thêm ${quantity} ${product.Name} vào giỏ hàng thành công!`); // Cập nhật thông báo
+        setNotification(`Thêm ${quantity} ${product.Name} vào giỏ hàng thành công!`);
 
-        // Ẩn thông báo sau 3 giây
         setTimeout(() => {
             setNotification('');
         }, 3000);
     };
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
+    if (loading) return <div className="loading">Loading...</div>;
+    if (error) return <div className="error">Error: {error}</div>;
 
     return (
-        <div>
+        <div className="product-detail-container">
             <Header />
             <Menu />
             {notification && (
-                <div className="notification">{notification}</div> // Khung thông báo
+                <div className="notification">{notification}</div>
             )}
             <div className="product-detail">
                 <div className="product-info">
@@ -78,34 +92,48 @@ const ProductDetail = () => {
                         <img src={`${process.env.PUBLIC_URL}/${product.Img}`} alt={product.Name} />
                     </div>
                     <div className="details-container">
-                        <h1>{product.Name}</h1>
-                        <p>{product.Description}</p>
-                        <p>Giá: {product.Price} VNĐ</p>
+                        <h1 className="product-title">{product.Name}</h1>
+                        <p className="product-description">{product.Description}</p>
+                        <p className="product-price">Giá: {product.Price.toLocaleString()} VNĐ</p>
+                        <p className="product-stock">Tồn kho: {product.Stock} sản phẩm</p>
 
                         <div className="quantity-control">
-                            <button onClick={handleDecrease}>-</button>
-                            <span>{quantity}</span>
-                            <button onClick={handleIncrease}>+</button>
+                            <button className="quantity-button" onClick={handleDecrease}>-</button>
+                            <span className="quantity">{quantity}</span>
+                            <button className="quantity-button" onClick={handleIncrease}>+</button>
                         </div>
-                        <button className="add-to-cart-button" onClick={handleAddToCart}>
+                        <button 
+                            className="add-to-cart-button" 
+                            onClick={handleAddToCart}
+                            disabled={product.Stock === 0}  // Disable button if stock is 0
+                        >
                             Thêm vào giỏ hàng
                         </button>
                     </div>
                 </div>
 
-                <h2>Sản phẩm liên quan</h2>
+                <h2 className="related-products-title">Sản phẩm liên quan</h2>
                 <div className="related-products">
-                    {relatedProducts.map(relatedProduct => (
-                        <div key={relatedProduct._id} className="related-product-item">
+                    {relatedProducts.length > 0 ? (
+                        relatedProducts.map(relatedProduct => (
+                            <div className="related-product-item" key={relatedProduct._id}>
                             <Link to={`/product/${relatedProduct._id}`}>
-                                <img src={`${process.env.PUBLIC_URL}/${relatedProduct.Img}`} alt={relatedProduct.Name} />
-                                <h4>{relatedProduct.Name}</h4>
+                            <img 
+                                src={`${process.env.PUBLIC_URL}/${relatedProduct.Img}`} 
+                                alt={relatedProduct.Name} 
+                                className="related-product-img" 
+                            />
+                            <h3 className="related-product-name">{relatedProduct.Name}</h3>
+                            <p className="related-product-price">{relatedProduct.Price.toLocaleString()} VNĐ</p>
                             </Link>
-                        </div>
-                    ))}
                 </div>
+        ))
+    ) : (
+        <p className="no-related-products">Không có sản phẩm liên quan.</p>
+                    )}
+                </div>
+
             </div>
-            <Footer />
         </div>
     );
 };

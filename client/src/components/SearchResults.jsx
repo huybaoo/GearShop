@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import '../css/ProductList.css';
-import Menu from './Menu';
 import Header from './Header';
-import Footer from './Footer';
+import Menu from './Menu';
 
 const SearchResults = () => {
     const [products, setProducts] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
-    const query = new URLSearchParams(useLocation().search).get('query'); // Lấy query từ URL
+    const query = new URLSearchParams(useLocation().search).get('query');
 
     useEffect(() => {
         const fetchSearchResults = async () => {
@@ -27,6 +25,10 @@ const SearchResults = () => {
         fetchSearchResults();
     }, [query]);
 
+    const formatPrice = (price) => {
+        return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "đ";
+    };
+
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
 
@@ -34,31 +36,30 @@ const SearchResults = () => {
         <div>
             <Header />
             <Menu />
-        <div className="product-list">
-            <h2>Kết quả tìm kiếm cho: "{query}"</h2>
-            <ul>
-                {products.length > 0 ? (
-                    products.map(product => (
-                        <li key={product._id} className="product-item">
-                            <Link to={`/product/${product._id}`}>
-                                <img src={`${process.env.PUBLIC_URL}/${product.Img}`} alt={product.Name} />
-                                <h4>{product.Name}</h4>
-                            </Link>
-                            <div className="priceandbutton">
-                                <div className="priceproduct">{product.Price}đ</div>
-                                <div className="button-group">
-                                    <button className="btn-add-to-cart">Thêm vào giỏ hàng</button>
-                                    <button className="btn-buy-now">Mua ngay</button>
+            <div className="pl-product-list">
+                <h2>Kết quả tìm kiếm cho: "{query}"</h2>
+                <ul>
+                    {products.length > 0 ? (
+                        products.map(product => (
+                            <li key={product._id} className="pl-product-list-item">
+                                <Link to={`/product/${product._id}`} style={{ textDecoration: 'none' }}>
+                                    <img src={`${process.env.PUBLIC_URL}/${product.Img}`} alt={product.Name} />
+                                    <h4 className="product-name">{product.Name}</h4>
+                                </Link>
+                                <div className="pl-priceandbutton">
+                                    <div className="priceproduct">{formatPrice(product.Price)}</div>
+                                    <div className="pl-button-group">
+                                        <button className="pl-btn-add-to-cart">Thêm vào giỏ hàng</button>
+                                        <button className="pl-btn-buy-now">Mua ngay</button>
+                                    </div>
                                 </div>
-                            </div>
-                        </li>
-                    ))
-                ) : (
-                    <div>Không tìm thấy sản phẩm nào.</div>
-                )}
-            </ul>
-        </div>
-        <Footer />
+                            </li>
+                        ))
+                    ) : (
+                        <div>Không tìm thấy sản phẩm nào.</div>
+                    )}
+                </ul>
+            </div>
         </div>
     );
 };
