@@ -1,19 +1,11 @@
-.adminhomeh1{
-    margin-top: 100px;
-    text-align: center;
-}
-.logout-button {
-    margin-top: 20px;
-    padding: 10px 15px;
-    background-color: #b40606; /* Màu đỏ */
-    color: white;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-left: 630px;
+.adminhome-content {
+    margin-left: 270px; /* Khoảng cách từ sidebar */
+    padding: 20px; /* Padding cho nội dung */
 }
 
-.logout-button:hover {
-    background-color: #d32f2f; /* Đậm hơn khi hover */
+.adminhomeh1 {
+    margin-top: 50px; /* Giảm khoảng cách phía trên */
+    text-align: center;
+    font-size: 24px; /* Thay đổi kích thước chữ */
+    color: #444; /* Màu chữ */
 }

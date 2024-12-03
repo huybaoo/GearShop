@@ -1,18 +1,19 @@
 .footer-container {
-    width: 100%;
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-gap: 30px;
-    background-color: #b40606;
-    padding-left: 30px;
-    color: white;
+    background-color: #b40606; /* Màu nền giống như header */
+    padding: 30px; /* Khoảng cách bên trong */
+    color: white; /* Màu chữ trắng */
 }
 
-.signup-section,
-.policy-section,
-.guide-section,
-.support-section,
-.payment-section {
+.footer-policy-section,
+.footer-guide-section,
+.footer-support-section {
     padding: 20px;
+}
+
+.footer-container h3 {
+    margin-bottom: 15px; /* Khoảng cách dưới tiêu đề */
 }
