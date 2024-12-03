@@ -5,10 +5,8 @@ import ProductList from './components/ProductList';
 import ProductDetail from './components/ProductDetail';
 import Home from './components/Home';
 import Details from './components/Details';
-import Header from './components/Header';
 import Login from './components/Login';
 import Cart from './components/Cart';
-import Menu from './components/Menu';
 import Register from './components/Register';
 import AdminCategory from './components/AdminCategory';
 import AdminProductList from './components/AdminProductList';
@@ -23,6 +21,8 @@ import AdminLogin from './components/AdminLogin';
 import ProtectedRoute from './components/ProtectedRoute';
 import PaymentSuccess from './components/PaymentSuccess';
 import OrderHistory from './components/OrderHistory';
+import AdminOrderHistory from './components/AdminOrderHistory';
+import AdminCustomerList from './components/AdminCustomerList';
 
 const App = () => {
     return (
@@ -48,6 +48,8 @@ const App = () => {
                 <Route path="/admin" element={<ProtectedRoute><AdminHome /></ProtectedRoute>} />
                 <Route path="/admin/admincategory" element={<ProtectedRoute><AdminCategory /></ProtectedRoute>}/>
                 <Route path="/admin/adminproductlist" element={<ProtectedRoute><AdminProductList /></ProtectedRoute>}/>
+                <Route path="/admin/adminorderhistory" element={<ProtectedRoute><AdminOrderHistory /></ProtectedRoute>}/>
+                <Route path="/admin/admincustomerlist" element={<ProtectedRoute><AdminCustomerList /></ProtectedRoute>}/>
             </Routes>
         </Router>
     );
