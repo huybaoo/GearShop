@@ -9,13 +9,21 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Sử dụng mongoURI từ biến môi trường hoặc giá trị mặc định
+const vnpayRouter = require('./routes/vnpay'); 
+// Sử dụng router VNPAY
+app.use('/api/v1/vnpay', vnpayRouter);
+
+// Sử dụng mongoURI 
 const mongoURI = process.env.MONGO_URI || "mongodb+srv://nhom4:nhom4@cluster0.zmz8v.mongodb.net/gearshop";
 
 // Kết nối MongoDB
 mongoose.connect(mongoURI)
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('Failed to connect to MongoDB:', err));
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 
 // Định nghĩa schema và model cho sản phẩm
 const productSchema = new mongoose.Schema({
@@ -24,10 +32,58 @@ const productSchema = new mongoose.Schema({
     Price: String,
     Img: String,
     Type: String,
-    Brand: String
+    Brand: String,
+    Stock: { type: Number, required: true }, 
 }, { collection: 'product' });
 
 const Product = mongoose.model('Product', productSchema);
+
+// Định nghĩa schema và model cho Category
+const categorySchema = new mongoose.Schema({
+    Type: String
+}, { collection: 'category' });
+    
+const Category = mongoose.model('Category', categorySchema);
+
+// Định nghĩa schema và model cho Customer
+const customerSchema = new mongoose.Schema({
+    Name: String,
+    Email: String,
+    Phone: Number,
+    Address: String,
+    Password: String
+}, { collection: 'customer' });
+
+const Customer = mongoose.model('Customer', customerSchema);
+
+// Định nghĩa schema và model cho admin
+const adminSchema = new mongoose.Schema({
+    username: String,
+    password: String
+}, { collection: 'admin' });
+
+const Admin = mongoose.model('Admin', adminSchema);
+
+//Định nghĩa Model cho Order
+const orderSchema = new mongoose.Schema({
+    user: { type: Object, required: true }, // User data
+    products: [
+        {
+            productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+            quantity: { type: Number, required: true },
+            name: { type: String, required: true }, 
+            price: { type: Number, required: true } 
+        }
+    ],
+    totalPrice: { type: Number, required: true },
+    method: { type: String, default: 'Chưa thanh toán' }, 
+    status: { type: String, default: 'Chưa được xác nhận' }, 
+    createdAt: { type: Date, default: Date.now }
+}, { collection: 'order' });
+
+const Order = mongoose.model('Order', orderSchema);
+
+module.exports = { Order, Product, Category, Customer, Admin };
 
 // API để lấy danh sách sản phẩm
 app.get('/api/product', async (req, res) => {
@@ -56,21 +112,27 @@ app.get('/api/product/:id', async (req, res) => {
     }
 });
 
-app.get('/api/related-products/:type', async (req, res) => {
+// API sản phẩm liên quan
+app.get('/api/products/related', async (req, res) => {
+    const { name, excludeId } = req.query;
+
+    if (!name) {
+        return res.status(400).json({ message: 'Missing name query parameter' });
+    }
+
     try {
-        const relatedProducts = await Product.find({ Type: req.params.type }).limit(4);
-        res.json(relatedProducts);
+        const searchKey = name.substring(0, 10);
+
+        const products = await Product.find({
+            Name: { $regex: new RegExp(searchKey, 'i') },
+            _id: { $ne: excludeId }
+        });
+
+        res.json(products || []); // Luôn trả về mảng
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        res.status(500).json({ message: 'Server Error', error: err.message });
     }
 });
-
-// Định nghĩa schema và model cho Category
-const categorySchema = new mongoose.Schema({
-    Type: String
-    }, { collection: 'category' });
-    
-    const Category = mongoose.model('Category', categorySchema);
 
 // API lấy danh sách category
 app.get('/api/category', async (req, res) => {
@@ -114,16 +176,6 @@ app.delete('/api/category/:id', async (req, res) => {
             return res.status(404).json({ message: "Category không tìm thấy" });
         }
         res.json({ message: "Category đã bị xóa" });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// API lấy danh sách sản phẩm
-app.get('/api/product', async (req, res) => {
-    try {
-        const products = await Product.find();
-        res.json(products);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -177,23 +229,6 @@ app.get('/api/search', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
-
-// Định nghĩa schema và model cho giỏ hàng
-const cartSchema = new mongoose.Schema({
-    customer_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' }, // Tham chiếu đến khách hàng
-    products: [
-        {
-            productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-            quantity: { type: Number, default: 1 }
-        }
-    ]
-}, { collection: 'cart' });
-
-const Cart = mongoose.model('Cart', cartSchema);
-
 // API để thêm sản phẩm vào giỏ hàng
 app.post('/api/cart', async (req, res) => {
     const { customer_id, productId, quantity } = req.body;
@@ -225,19 +260,6 @@ app.post('/api/cart', async (req, res) => {
     }
 });
 
-
-
-// Định nghĩa schema và model cho Customer
-const customerSchema = new mongoose.Schema({
-    Name: String,
-    Email: String,
-    Phone: Number,
-    Address: String,
-    Password: String
-}, { collection: 'customer' });
-
-const Customer = mongoose.model('Customer', customerSchema);
-
 // API đăng nhập
 app.post('/api/login', async (req, res) => {
     const { name, password } = req.body;
@@ -254,9 +276,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-
-
-// API để đăng ký người dùng
+// API để đăng ký 
 app.post('/api/register', async (req, res) => {
     const { name, email, phone, address, password } = req.body;
 
@@ -282,14 +302,7 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// Định nghĩa schema và model cho admin
-const adminSchema = new mongoose.Schema({
-    username: String,
-    password: String
-}, { collection: 'admin' });
-
-const Admin = mongoose.model('Admin', adminSchema);
-
+//API đăng nhập ADMIN
 app.post('/api/admin/login', async (req, res) => {
     const { username, password } = req.body;
 
@@ -305,36 +318,9 @@ app.post('/api/admin/login', async (req, res) => {
     }
 });
 
-
-const vnpayRouter = require('./vnpay'); 
-// Sử dụng router VNPAY
-app.use('/api/v1/vnpay', vnpayRouter);
-
-// Define Order schema and model
-const orderSchema = new mongoose.Schema({
-    user: { type: Object, required: true }, // User data
-    products: [
-        {
-            productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-            quantity: { type: Number, required: true },
-            name: { type: String, required: true }, 
-            price: { type: Number, required: true } 
-        }
-    ],
-    totalPrice: { type: Number, required: true },
-    status: { type: String, default: 'Chưa thanh toán' },
-    createdAt: { type: Date, default: Date.now }
-}, { collection: 'order' });
-
-const Order = mongoose.model('Order', orderSchema);
-
-module.exports = { Order, Product, Category, Cart, Customer, Admin };
-
-// API to create an order
+// API tạo hóa đơn
 app.post('/api/orders', async (req, res) => {
-    const { user, products, totalPrice, status } = req.body;
-
-    console.log("Received order data:", req.body); // Log the incoming data
+    const { user, products, totalPrice, method, status } = req.body;
 
     if (!user || !products || !totalPrice) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -344,23 +330,97 @@ app.post('/api/orders', async (req, res) => {
         user,
         products,
         totalPrice,
+        method,
         status
     });
 
     try {
+        // Lưu đơn hàng
         await newOrder.save();
+
+        // Cập nhật số lượng tồn kho
+        for (const product of products) {
+            await Product.findByIdAndUpdate(
+                product.productId,
+                { $inc: { Stock: -product.quantity } },
+                { new: true }
+            );
+        }
+
         res.status(201).json({ message: 'Order created successfully', orderId: newOrder._id });
     } catch (err) {
-        console.error("Error creating order:", err);
+        console.error("Error creating order or updating stock:", err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// API để lấy danh sách đơn hàng theo tên người dùng
+// API lịch sử hóa đơn theo tên người dùng
 app.get('/api/orders/name/:name', async (req, res) => {
     try {
         const orders = await Order.find({ 'user.Name': req.params.name }).populate('products.productId');
         res.json(orders);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// API để lấy tất cả đơn hàng trang admin
+app.get('/api/adminorders', async (req, res) => {
+    try {
+        const orders = await Order.find().populate('products.productId');
+        res.json(orders);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// API để lấy danh sách tất cả khách hàng
+app.get('/api/customers', async (req, res) => {
+    try {
+        const customers = await Customer.find();
+        res.json(customers);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// API để hủy đơn hàng
+app.put('/api/orders/:id', async (req, res) => {
+    const { status } = req.body;
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ message: "Đơn hàng không tìm thấy" });
+        }
+
+        // Cập nhật số lượng hàng trong kho
+        for (const product of order.products) {
+            await Product.findByIdAndUpdate(
+                product.productId,
+                { $inc: { Stock: product.quantity } }, // Cộng số lượng sản phẩm vào kho
+                { new: true }
+            );
+        }
+
+        // Cập nhật trạng thái đơn hàng thành 'Đơn hàng đã hủy'
+        order.status = status || 'Đơn hàng đã hủy';
+        await order.save();
+
+        res.json(order);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// API để cập nhật trạng thái đơn hàng
+app.put('/api/orders/:id', async (req, res) => {
+    const { status } = req.body;
+    try {
+        const updatedOrder = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true });
+        if (!updatedOrder) {
+            return res.status(404).json({ message: "Đơn hàng không tìm thấy" });
+        }
+        res.json(updatedOrder);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
