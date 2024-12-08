@@ -25,7 +25,7 @@ const AdminOrderHistory = () => {
 
     const handleConfirmOrder = async (orderId) => {
         try {
-            await axios.put(`http://localhost:5000/api/orders/${orderId}`, { status: 'Đã được xác nhận' });
+            await axios.put(`http://localhost:5000/api/orders/confirm/${orderId}`);
 
             setOrders(orders.map(order => 
                 order._id === orderId ? { ...order, status: 'Đã được xác nhận' } : order

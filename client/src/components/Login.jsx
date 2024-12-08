@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; // Nhập useNavigate
-import Header from '../components/Header';
-import Menu from '../components/Menu';
 import '../css/Login.css';
 
 const Login = () => {

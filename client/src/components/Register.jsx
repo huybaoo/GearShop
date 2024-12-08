@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import emailjs from 'emailjs-com';
 import '../css/Register.css';
 import axios from 'axios';
 
@@ -9,44 +10,89 @@ const Register = () => {
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
     const [password, setPassword] = useState('');
+    const [verificationCode, setVerificationCode] = useState('');
+    const [sentCode, setSentCode] = useState('');
     const [message, setMessage] = useState('');
+    const [isCodeSent, setIsCodeSent] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
-        try {
-            const response = await axios.post('http://localhost:5000/api/register', {
-                name: name, 
-                email: email, 
-                phone: phone, 
-                address: address, 
-                password: password, 
-            });
 
-            console.log(response.data);
-            setMessage('Đăng ký thành công!');
-            setTimeout(() => {
-                navigate('/login');
-            }, 3500);
+        // Tạo mã xác nhận ngẫu nhiên
+        const code = Math.random().toString(36).substring(2, 8);
+        setSentCode(code); // Lưu mã xác nhận để kiểm tra sau
+
+        try {
+            // Kiểm tra tên người dùng có tồn tại không
+            const checkResponse = await axios.post('http://localhost:5000/api/check-user', { name, email });
+            if (!checkResponse.data.available) {
+                setMessage('Tên hoặc email đã tồn tại. Vui lòng chọn khác.');
+                return;
+            }
+
+            // Gửi email xác nhận
+            await emailjs.send('service_wgo5m5a', 'template_duq3z3e', {
+                name,
+                email,
+                verificationCode: code,
+            }, '7oV_vV7xwhrwQvsb9'); // Thay 'user_your_user_id' bằng user ID của bạn từ EmailJS
+
+            setMessage('Mã xác nhận đã được gửi đến email của bạn.');
+            setIsCodeSent(true);
         } catch (error) {
-            console.error('Lỗi khi đăng ký:', error.response ? error.response.data : error.message);
-            setMessage(error.response ? error.response.data.message : 'Đăng ký không thành công. Vui lòng thử lại.');
+            setMessage('Đã xảy ra lỗi khi gửi email hoặc kiểm tra tên. Vui lòng thử lại.');
         }
     };
-    
+
+    const handleVerify = async (e) => {
+        e.preventDefault();
+
+        if (verificationCode === sentCode) {
+            try {
+                const response = await axios.post('http://localhost:5000/api/register', {
+                    name,
+                    email,
+                    phone,
+                    address,
+                    password,
+                });
+
+                setMessage(response.data.message);
+                if (response.status === 201) {
+                    setTimeout(() => {
+                        navigate('/login');
+                    }, 3500);
+                }
+            } catch (error) {
+                setMessage(error.response ? error.response.data.message : 'Đã xảy ra lỗi. Vui lòng thử lại.');
+            }
+        } else {
+            setMessage('Mã xác nhận không chính xác. Vui lòng thử lại.');
+        }
+    };
+
     return (
         <div className="login-container">
             <div className="Register-box">
                 <h2>Đăng ký</h2>
                 {message && <div className="message">{message}</div>}
-                <form onSubmit={handleSubmit}>
-                    <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
-                    <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                    <input type="text" placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} required />
-                    <input type="text" placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} required />
-                    <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                    <button type="submit">Đăng Kí</button>
-                </form>
+                
+                {!isCodeSent ? (
+                    <form onSubmit={handleRegister}>
+                        <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+                        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                        <input type="text" placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+                        <input type="text" placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} required />
+                        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                        <button type="submit">Đăng Kí</button>
+                    </form>
+                ) : (
+                    <form onSubmit={handleVerify}>
+                        <input type="text" placeholder="Mã xác nhận" value={verificationCode} onChange={(e) => setVerificationCode(e.target.value)} required />
+                        <button type="submit">Xác thực</button>
+                    </form>
+                )}
             </div>
         </div>
     );

@@ -51,7 +51,13 @@ const AdminCategory = () => {
             return;
         }
         try {
-            const res = await axios.put(`http://localhost:5000/api/category/${confirmAction.id}`, { Type: confirmAction.name });
+            // Kiểm tra ID trước khi gửi yêu cầu PUT
+            if (!confirmAction.id) {
+                alert("ID không hợp lệ.");
+                return;
+            }
+    
+            const res = await axios.put(`http://localhost:5000/api/category/${confirmAction.id}`, { Type: editCategoryName });
             setCategories(categories.map(cat => (cat._id === confirmAction.id ? res.data : cat)));
             setEditCategoryId(null);
             setEditCategoryName("");
