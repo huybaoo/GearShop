@@ -1,6 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto'); 
 require('dotenv').config();
 
 const app = express();
@@ -9,7 +11,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const vnpayRouter = require('./vnpay'); 
+const vnpayRouter = require('./routes/vnpay'); 
 // Sử dụng router VNPAY
 app.use('/api/v1/vnpay', vnpayRouter);
 
@@ -47,11 +49,11 @@ const Category = mongoose.model('Category', categorySchema);
 
 // Định nghĩa schema và model cho Customer
 const customerSchema = new mongoose.Schema({
-    Name: String,
-    Email: String,
+    Name: { type: String, unique: true },
+    Email: { type: String, unique: true }, 
     Phone: Number,
     Address: String,
-    Password: String
+    Password: String,
 }, { collection: 'customer' });
 
 const Customer = mongoose.model('Customer', customerSchema);
@@ -157,8 +159,15 @@ app.post('/api/category', async (req, res) => {
 
 // API để sửa category
 app.put('/api/category/:id', async (req, res) => {
+    const { id } = req.params;
+
+    // Kiểm tra xem ID có hợp lệ không
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "ID không hợp lệ" });
+    }
+
     try {
-        const updatedCategory = await Category.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedCategory = await Category.findByIdAndUpdate(id, { Type: req.body.Type }, { new: true });
         if (!updatedCategory) {
             return res.status(404).json({ message: "Category không tìm thấy" });
         }
@@ -276,15 +285,31 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// API để đăng ký 
+// API để kiểm tra tên và email người dùng đã tồn tại hay chưa
+app.post('/api/check-user', async (req, res) => {
+    const { name, email } = req.body;
+
+    try {
+        const existingCustomerByName = await Customer.findOne({ Name: name });
+        const existingCustomerByEmail = await Customer.findOne({ Email: email });
+        
+        if (existingCustomerByName || existingCustomerByEmail) {
+            return res.status(200).json({ available: false });
+        }
+        res.status(200).json({ available: true });
+    } catch (err) {
+        res.status(500).json({ message: 'Đã xảy ra lỗi. Vui lòng thử lại.' });
+    }
+});
+
+// API để đăng ký
 app.post('/api/register', async (req, res) => {
     const { name, email, phone, address, password } = req.body;
 
     try {
-        // Kiểm tra xem tên đã tồn tại hay chưa
-        const existingCustomer = await Customer.findOne({ Name: name });
+        const existingCustomer = await Customer.findOne({ Email: email });
         if (existingCustomer) {
-            return res.status(400).json({ message: 'Tên đăng nhập đã được sử dụng. Vui lòng chọn tên khác.' });
+            return res.status(400).json({ message: 'Email đã được sử dụng. Vui lòng chọn email khác.' });
         }
 
         const newCustomer = new Customer({
@@ -292,11 +317,48 @@ app.post('/api/register', async (req, res) => {
             Email: email,
             Phone: phone,
             Address: address,
-            Password: password
+            Password: password,
         });
 
-        const savedCustomer = await newCustomer.save();
-        res.status(201).json(savedCustomer);
+        await newCustomer.save();
+        res.status(201).json({ message: 'Tài khoản đã được tạo thành công! Bạn có thể đăng nhập.' });
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+// Hàm gửi email xác nhận qua EmailJS
+const sendVerificationEmail = async (email, verificationCode) => {
+    const emailjs = require('emailjs-com');
+
+    const templateParams = {
+        to_email: email,
+        verification_code: verificationCode,
+    };
+
+    return emailjs.send('service_wgo5m5a', 'template_duq3z3e', templateParams, '7oV_vV7xwhrwQvsb9'); // Thay 'user_your_user_id' bằng user ID của bạn từ EmailJS
+};
+
+// API để xác minh mã
+app.post('/api/verify', async (req, res) => {
+    const { email, verificationCode } = req.body;
+
+    try {
+        const customer = await Customer.findOne({ Email: email });
+
+        if (!customer) {
+            return res.status(404).json({ message: 'Người dùng không tồn tại.' });
+        }
+
+        if (customer.VerificationCode !== verificationCode) {
+            return res.status(400).json({ message: 'Mã xác nhận không chính xác.' });
+        }
+
+        // Nếu mã xác nhận đúng, lưu tài khoản vào cơ sở dữ liệu
+        customer.VerificationCode = undefined; // Xóa mã xác nhận
+        await customer.save(); // Cập nhật thông tin khách hàng
+
+        res.status(200).json({ message: 'Đăng ký thành công! Bạn có thể đăng nhập.' });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
@@ -412,11 +474,14 @@ app.put('/api/orders/:id', async (req, res) => {
     }
 });
 
-// API để cập nhật trạng thái đơn hàng
-app.put('/api/orders/:id', async (req, res) => {
-    const { status } = req.body;
+// API để xác nhận đơn hàng
+app.put('/api/orders/confirm/:id', async (req, res) => {
     try {
-        const updatedOrder = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true });
+        const updatedOrder = await Order.findByIdAndUpdate(
+            req.params.id,
+            { status: 'Đã được xác nhận' },
+            { new: true }
+        );
         if (!updatedOrder) {
             return res.status(404).json({ message: "Đơn hàng không tìm thấy" });
         }
