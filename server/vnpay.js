@@ -3,7 +3,7 @@ const config = require('config');
 const crypto = require('crypto');
 const moment = require('moment');
 const querystring = require('qs');
-const { Order } = require('../server');
+const { Order } = require('./server');
 
 
 const router = express.Router();
